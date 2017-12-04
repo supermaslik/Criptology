@@ -15,11 +15,13 @@ namespace Vernam
 
         }
 
-        static void MainMethod()
+        static void MainMethod(string text = "тут находится какой-то текст text check", string key = "ключ")
         {
             string alph = "абвгдежзийклмнопрстуфхцчшыьэюя -.";
-            string text = "тут можно найти какой-то текст";
-            string key = "ключ";
+            text = text.CheckText(alph);
+            key = key.CheckText(alph);
+
+
 
             var pad = new OnTimePad(alph);
             string encrypt = pad.Crypt(text, key);
@@ -45,11 +47,7 @@ namespace Vernam
                 alph_r.Add(i++, c);
             }
         }
-        /// <summary>
-        /// Версия с оператором xor
-        ///
-        /// Желательно, чтобы длина алфавита была степень двойки (например 32)
-        /// </summary>
+
         public string Crypt(string Text, string Key)
         {
             char[] key = Key.ToCharArray();
@@ -61,11 +59,54 @@ namespace Vernam
                 int ind;
                 if (alph.TryGetValue(text[i], out ind))
                 {
+
                     sb.Append(alph_r[(ind ^ alph[key[i % key.Length]]) % alph.Count]);
                 }
+                else
+                    throw new ArgumentException();
             }
 
             return sb.ToString();
+        }
+    }
+
+    public static class StringHandler {
+
+        public static string CheckText(this string text, string alph)
+        {
+            text = text.ToLower();
+
+            StringBuilder stringToReturn;
+            StringBuilder untraceChars;
+            CreateValidString(text, alph, out stringToReturn, out untraceChars);
+
+
+            if (untraceChars.ToString().Length != 0)
+                ShowUntraceChars(untraceChars.ToString());
+
+            return stringToReturn.ToString();
+
+        }
+        private static void CreateValidString(string text, string alph, out StringBuilder stringToReturn, out StringBuilder untraceChars)
+        {
+            stringToReturn = new StringBuilder();
+            untraceChars = new StringBuilder();
+
+            for (int i = 0; i < text.Length; i++)
+                if (alph.Contains(text[i]))
+                    stringToReturn.Append(text[i]);
+                else
+                    untraceChars.Append(text[i]);
+        }
+        private static void ShowUntraceChars(string UntraceChars)
+        {
+            Console.WriteLine("В введённом тексте были найдены невалидные символы: ");
+            for(int i = 0; i < UntraceChars.Length; i++)
+            {
+                Console.Write(UntraceChars[i] + " ");
+            }
+            Console.WriteLine("\nВ последствии они будут выкинуты из текста");
+            Console.WriteLine();
         }
     }
 }
